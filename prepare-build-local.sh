@@ -53,8 +53,12 @@ else
   git clone --branch master https://github.com/ckan/datapusher.git ./ckan_setup/datapusher
 fi
 
-cat docker-compose.yml.template | envsubst > docker-compose.yml
+cat docker-compose.yml.tmpl | envsubst > docker-compose.yml
 cat ./ckan_setup/conf/postgres/ckan_init.sql.template | envsubst > ./ckan_setup/conf/postgres/ckan_init.sql
+
+echo ----running build sh----
+# exec the build script
+. build-local.sh
 
 trap : 0
 echo >&2 '*** DONE ***'
