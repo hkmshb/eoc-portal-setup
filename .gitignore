@@ -1,0 +1,12 @@
+# code dirs
+ckan_setup/
+
+# data dirs
+db-data/
+ckan-data/
+logstash-data/
+
+docker-compose.yml
+[._]tmp/
+.venv
+.env
