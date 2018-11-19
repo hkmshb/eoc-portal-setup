@@ -10,17 +10,17 @@ set -eux
 echo --env file applied--
 export HOSTNAME=data-eocng.box
 
-export CKAN_DB_PASSWORD=$(pwgen 24 1)
-export POSTGRES_PASSWORD=$(pwgen 24 1)
+export CKAN_DB_PASSWORD=${CKAN_DB_PASSWORD}
+export POSTGRES_PASSWORD=${CKAN_DB_PASSWORD}
 
-export DATA_STORE_PASSWORD=$(pwgen 24 1)
+export DATA_STORE_PASSWORD=${DATA_STORE_PASSWORD}
 
 export SMTP_SERVER=${SMTP_SERVER}
 export SMTP_USER=${SMTP_USER}
 export SMTP_PASSWORD=${SMTP_PASSWORD}
 
 export CKAN_VERSION=${CKAN_VERSION}
-export CKAN_SITE_URL="http://${CKAN_DB_HOST}"
+export CKAN_SITE_URL="http://${CKAN_DB_HOST}:5000"
 export CKAN_DB_USER="ckan"
 export CKAN_DB_HOST="db"
 export CKAN_DB_NAME="ckan"

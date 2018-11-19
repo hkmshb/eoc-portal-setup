@@ -48,3 +48,9 @@ docker-compose build datapusher
 # docker-compose build sync_cronjob
 # docker-compose build nginx
 docker-compose build solr
+
+
+## ELK stack
+docker-compose build elasticsearch
+docker-compose build kibana
+docker-compose build logstash
