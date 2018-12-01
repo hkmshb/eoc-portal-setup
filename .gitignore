@@ -1,3 +1,7 @@
+# compiled
+__pycache__
+*.py[cdo]
+
 # code dirs
 ckan_setup/
 
@@ -5,8 +9,11 @@ ckan_setup/
 db-data/
 ckan-data/
 logstash-data/
+eoc-elk/
+_elk/
 
 docker-compose.yml
+.DS_Store
 [._]tmp/
 .venv
 .env

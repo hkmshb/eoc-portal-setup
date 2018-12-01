@@ -153,11 +153,12 @@ services:
     ports:
       - "5001:5000"
     environment:
-      LS_JAVA_OPTS: "-Xmx256m -Xms256m"
+      LS_JAVA_OPTS: "-Xmx512m -Xms512m"
       JDBC_STRING: jdbc:postgresql://host.docker.internal/eha
       POSTGRES_USER: 'hkmshb'
       POSTGRES_PASSWORD: '0p3n'
       CKAN_DB_HOST: host.docker.internal
+      ES_HOST: elasticsearch:9200
     command: start-prod
     networks:
       local:

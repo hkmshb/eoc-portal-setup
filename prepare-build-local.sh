@@ -46,7 +46,7 @@ export ELK_VERSION=${ELK_VERSION}
 if [ -d ckan_setup ]; then
   echo ckan_setup already exists
 else
-  git clone --branch master --depth 1 https://github.com/ehealthAfrica/ckan_setup.git ckan_setup
+  git clone https://github.com/ehealthAfrica/ckan_setup.git ckan_setup
 
   # we need more than the depth of 1 to be able to checkout to the 2.7 tag we use in build.sh
   git clone --branch ${CKAN_VERSION} --single-branch --depth 1 https://github.com/ckan/ckan.git ./ckan_setup/ckan
