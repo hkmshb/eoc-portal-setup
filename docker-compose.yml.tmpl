@@ -158,6 +158,8 @@ services:
       POSTGRES_USER: 'hkmshb'
       POSTGRES_PASSWORD: '0p3n'
       CKAN_DB_HOST: host.docker.internal
+      PSQL_USER: hkmshb
+      PSQL_PASSWORD: 0p3n
       ES_HOST: elasticsearch:9200
     command: start-prod
     networks:
