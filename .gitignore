@@ -3,12 +3,11 @@ __pycache__
 *.py[cdo]
 
 # code dirs
+ckan_data/
 ckan_setup/
+extensions/
 
 # data dirs
-db-data/
-ckan-data/
-logstash-data/
 eoc-elk/
 _elk/
 
