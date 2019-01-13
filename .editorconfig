@@ -1,0 +1,8 @@
+root = true
+
+[*]
+end_of_line = lf
+
+[*.{config,html,js,sh}]
+indent_size = 2
+indent_style = space
