@@ -1,5 +1,5 @@
 #!/bin/bash
-set -eu
+set -eux
 
 show_help() {
   echo """
@@ -47,16 +47,21 @@ perform_init() {
     git clone https://github.com/eHealthAfrica/gather2_integration.git extensions/gather2_integration
   fi
 
+  if [[ ! -d ckan_elk ]]; then
+    git clone https://github.com/hkmshb/eoc-elk.git ckan_elk
+  fi
+
   echo ">> Done setting up environment"
 }
 
 perform_prepare_build() {
   echo ">> Preparing the environment for a build..."
 
+  source .env
   export HOSTNAME=${HOSTNAME}
   export POSTGRES_PASSWORD="pg"
   
-  export CKAN_SITE_URL="https://data.eocng.lh"
+  export CKAN_SITE_URL=${CKAN_SITE_URL}
   export CKAN_DB_HOST=${CKAN_DB_HOST}
   export CKAN_DB_NAME=${CKAN_DB_NAME}
   export CKAN_DB_USER=${CKAN_DB_USER}
@@ -88,6 +93,13 @@ perform_prepare_build() {
 
 perform_build() {
   cd ckan_setup
+
+  # syncjob
+  mkdir -p sync_cronjob/conf
+  cp conf/sync-prod-data.sh sync_cronjob/conf
+  cp conf/sync-prod-data-cron sync_cronjob/conf
+
+  # patch ckan
   if [[ ! -f ckan/.skip ]]; then
     cp ckan_patch.patch ckan
     cd ckan
@@ -103,6 +115,7 @@ perform_build() {
   cp conf/datapusher_settings.py datapusher/deployment/datapusher_settings.py
   cp conf/datapusher_main.py datapusher/datapusher/main.py
 
+  cp sync_cronjob_Dockerfile sync_cronjob/Dockerfile
   cp solr_Dockerfile ckan/contrib/docker/solr/Dockerfile
 }
 
@@ -162,8 +175,9 @@ case "$*" in
     perform_build
   ;;
   ckan-up )
+    source .env
     perform_build
-    docker-compose up datapusher db redis solr ckan
+    docker-compose up db redis solr ckan
   ;;
   * )
     show_help

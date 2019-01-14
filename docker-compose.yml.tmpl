@@ -57,7 +57,7 @@ services:
       CKAN_API_KEY: ${CKAN_API_KEY}
       DATASTORE_NAME: ${DATASTORE_NAME}
       DATASTORE_USERNAME: ${DATASTORE_USERNAME}
-      DATA_STORE_PASSWORD: ${DATA_STORE_PASSWORD}
+      DATA_STORE_PASSWORD: ${DATASTORE_PASSWORD}
       DEBUG: "${DEBUG}"
       ENV: "prod"
       SMTP_SERVER: ${SMTP_SERVER}
@@ -78,6 +78,7 @@ services:
     volumes:
       - ./ckan_data/ckan-data:/var/lib/ckan
       - ./ckan_data/logstash-data:/var/lib/ckan/storage
+      - ./extensions:/usr/lib/ckan/default/src/extensions
     networks:
       local:
         aliases:
@@ -98,16 +99,16 @@ services:
   #         - data-eocng.local
   #         - nginx
 
-  # sync_cronjob:
-  #   build:
-  #     context: sync_cronjob
-  #     args:
-  #       POSTGRES_PASSWORD_DEV: ${POSTGRES_PASSWORD_DEV}
-  #   environment:
-  #     PGPASSWORD: ${POSTGRES_PASSWORD_DEV}
-  # image: docker.elastic.co/elasticsearch/elasticsearch-oss:6.2.3
+  sync_cronjob:
+    build:
+      context: ckan_setup/sync_cronjob
+      args:
+        POSTGRES_PASSWORD_DEV: ${POSTGRES_PASSWORD_DEV}
+    environment:
+      PGPASSWORD: ${POSTGRES_PASSWORD_DEV}
 
   elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch-oss:6.2.3
     build:
       context: ckan_elk/elasticsearch/
       args:
