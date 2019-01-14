@@ -74,13 +74,16 @@ RUN cd $CKAN_HOME/src \
 
 # install eHA EOC Extensions
 COPY ./extensions $CKAN_HOME/src/extensions/
-# install ckanext-eoc extension
-RUN cd $CKAN_HOME/src/extensions/ \
-    && ckan-pip install -e ckanext-eoc \
-    && ckan-pip install -r ckanext-eoc/requirements.txt \
-    # Install Gather 2 Integration
-    && ckan-pip install -e gather2_integration \
-    && ckan-pip install -r gather2_integration/requirements.txt
+
+## NOTE: commeted out because it doesn't carry throught
+## because extensions has been added as a mapped volume
+## install ckanext-eoc extension
+# RUN cd $CKAN_HOME/src/extensions/ \
+#     && ckan-pip install -e ckanext-eoc \
+#     && ckan-pip install -r ckanext-eoc/requirements.txt \
+#     # Install Gather 2 Integration
+#     && ckan-pip install -e gather2_integration \
+#     && ckan-pip install -r gather2_integration/requirements.txt
 
 # TMP-BUGFIX https://github.com/ckan/ckan/issues/3388
 ADD ./ckan_setup/ckan/dev-requirements.txt $CKAN_HOME/src/ckan/dev-requirements.txt
@@ -113,7 +116,7 @@ RUN chmod +x /rebuild-index.sh \
 RUN pip install awscli
 
 # SetUp EntryPoint
-COPY ./ckan_setup/conf/ckan-entrypoint.sh /
+COPY ./ckan-entrypoint.sh /
 COPY ./ckan_setup/conf/entrypoint.sh /
 RUN chmod +x /ckan-entrypoint.sh /opt/ckan/wait-for-it.sh /opt/ckan/create_admin_user.sh /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]
