@@ -1,5 +1,5 @@
 #!/bin/bash
-set -eux
+set -eu
 
 show_help() {
   echo """
@@ -10,8 +10,7 @@ show_help() {
     init            : setup a clean dev env
     prepare-build   : setup the env for a build
     build           : builds the docker contains for all defined services
-
-
+    ckan-up         : starts up CKAN
 
     deprecated?
       elk [--rebuild] [--up]          : manages the elk setup for eoc
@@ -26,10 +25,6 @@ perform_init() {
   echo ">> Setup environment for ELK and EOC extensions development..."
 
   # clone ckan repositories
-  if [[ ! -d ckan_setup ]]; then
-    git clone --depth=1 --branch=develop https://github.com/eHealthAfrica/ckan_setup.git
-  fi
-
   if [[ ! -d ckan_setup/ckan ]]; then
     git clone --depth=1 --branch ckan-2.7.2 https://github.com/ckan/ckan.git ckan_setup/ckan
   fi
@@ -38,7 +33,11 @@ perform_init() {
     git clone --branch master https://github.com/ckan/datapusher.git ckan_setup/datapusher
   fi
 
-  # clone eoc extensions
+  # clone eoc repositories
+  if [[ ! -d ckan_setup ]]; then
+    git clone --depth=1 --branch=develop https://github.com/eHealthAfrica/ckan_setup.git
+  fi
+
   if [[ ! -d extensions/ckanext-eoc ]]; then
     git clone https://github.com/eHealthAfrica/ckanext-eoc.git extensions/ckanext-eoc
   fi
@@ -56,6 +55,7 @@ perform_init() {
 
 perform_prepare_build() {
   echo ">> Preparing the environment for a build..."
+  echo ">> exporting env vars..."
 
   source .env
   export HOSTNAME=${HOSTNAME}
@@ -92,6 +92,7 @@ perform_prepare_build() {
 }
 
 perform_build() {
+  echo ">> Copying files in preparation for docker image build..."
   cd ckan_setup
 
   # syncjob

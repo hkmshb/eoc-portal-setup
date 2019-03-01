@@ -31,51 +31,51 @@ RUN apt-get -q -y update && apt-get -q -y upgrade \
     && apt-get -q clean
 
 # install firefox and geckodriver for headless web access
-RUN wget -N https://github.com/mozilla/geckodriver/releases/download/v0.21.0/geckodriver-v0.21.0-linux64.tar.gz \
-    && tar -xf geckodriver-v0.21.0-linux64.tar.gz \
-    && chmod +x geckodriver
+RUN wget -N https://github.com/mozilla/geckodriver/releases/download/v0.21.0/geckodriver-v0.21.0-linux64.tar.gz && \
+    tar -xf geckodriver-v0.21.0-linux64.tar.gz && \
+    chmod +x geckodriver
 
-RUN mv -f geckodriver /usr/local/share/geckodriver \
-    && ln -s /usr/local/share/geckodriver /usr/local/bin/geckodriver \
-    && ln -s /usr/local/share/geckodriver /usr/bin/geckodriver
+RUN mv -f geckodriver /usr/local/share/geckodriver && \
+    ln -s /usr/local/share/geckodriver /usr/local/bin/geckodriver && \
+    ln -s /usr/local/share/geckodriver /usr/bin/geckodriver
 
 # setup ckan virtual env
-RUN mkdir -p $CKAN_HOME $CKAN_CONFIG $CKAN_STORAGE_PATH \
-    && virtualenv $CKAN_HOME \
-    && ln -s $CKAN_HOME/bin/pip /usr/local/bin/ckan-pip \
-    && ln -s $CKAN_HOME/bin/paster /usr/local/bin/ckan-paster \
-    && ckan-pip install setuptools==35.0
+RUN mkdir -p $CKAN_HOME $CKAN_CONFIG $CKAN_STORAGE_PATH && \
+    virtualenv $CKAN_HOME && \
+    ln -s $CKAN_HOME/bin/pip /usr/local/bin/ckan-pip && \
+    ln -s $CKAN_HOME/bin/paster /usr/local/bin/ckan-paster && \
+    ckan-pip install setuptools==35.0
 
 # install ckan requirements
 ADD ./ckan_setup/ckan/requirements.txt $CKAN_HOME/src/ckan/requirements.txt
 RUN ckan-pip install --upgrade -r $CKAN_HOME/src/ckan/requirements.txt
 
 # install third-party extensions
-RUN cd $CKAN_HOME/src \
-    && ckan-pip install -e "git+https://github.com/datagovuk/ckanext-hierarchy.git#egg=ckanext-hierarchy" \
+RUN cd $CKAN_HOME/src && \
+    ckan-pip install -e "git+https://github.com/datagovuk/ckanext-hierarchy.git#egg=ckanext-hierarchy" && \
     # install OAuth2Client (required by googleanalytics)
-    && ckan-pip install oauth2client \
-    && ckan-pip install -e "git+https://github.com/ckan/ckanext-googleanalytics.git#egg=ckanext-googleanalytics" \
-    && ckan-pip install -r $CKAN_HOME/src/ckanext-googleanalytics/requirements.txt \
+    ckan-pip install oauth2client && \
+    ckan-pip install -e "git+https://github.com/ckan/ckanext-googleanalytics.git#egg=ckanext-googleanalytics" && \
+    ckan-pip install -r $CKAN_HOME/src/ckanext-googleanalytics/requirements.txt && \
     # install Odata extension
-    && ckan-pip install -e "git+https://github.com/whythawk/ckanext-odata.git#egg=ckanext-odata" \
+    ckan-pip install -e "git+https://github.com/whythawk/ckanext-odata.git#egg=ckanext-odata" && \
     # install ckanext-scheming extension
-    && ckan-pip install -e "git+https://github.com/ckan/ckanext-scheming.git#egg=ckanext-scheming" \
-    && ckan-pip install -r $CKAN_HOME/src/ckanext-scheming/requirements.txt \
+    ckan-pip install -e "git+https://github.com/ckan/ckanext-scheming.git#egg=ckanext-scheming" && \
+    ckan-pip install -r $CKAN_HOME/src/ckanext-scheming/requirements.txt && \
     # install ckan validation
-    && ckan-pip install -e "git+https://${GITHUB_TOKEN}@github.com/eHealthAfrica/ckanext-validation.git@v0.0.3a#egg=ckanext-validation" \
-    && ckan-pip install -r ${CKAN_HOME}/src/ckanext-validation/requirements.txt \
+    ckan-pip install -e "git+https://${GITHUB_TOKEN}@github.com/eHealthAfrica/ckanext-validation.git@v0.0.3a#egg=ckanext-validation" && \
+    ckan-pip install -r ${CKAN_HOME}/src/ckanext-validation/requirements.txt && \
     # install Geospatial View
-    && ckan-pip install ckanext-geoview \
+    ckan-pip install ckanext-geoview && \
     # Install CKAN Data requests
-    && ckan-pip install -e "git+https://github.com/eHealthAfrica/ckanext-requestdata.git@v2.1.7.9rc#egg=ckanext-requestdata" \
-    && ckan-pip install -r ${CKAN_HOME}/src/ckanext-requestdata/requirements.txt
+    ckan-pip install -e "git+https://github.com/eHealthAfrica/ckanext-requestdata.git@v2.1.7.9rc#egg=ckanext-requestdata" && \
+    ckan-pip install -r ${CKAN_HOME}/src/ckanext-requestdata/requirements.txt
 
 
 # install eHA EOC Extensions
 COPY ./extensions $CKAN_HOME/src/extensions/
 
-## NOTE: commeted out because it doesn't carry throught
+## NOTE: commented out because it doesn't carry through
 ## because extensions has been added as a mapped volume
 ## install ckanext-eoc extension
 # RUN cd $CKAN_HOME/src/extensions/ \
@@ -92,8 +92,8 @@ RUN ckan-pip install --upgrade -r $CKAN_HOME/src/ckan/dev-requirements.txt \
 
 # SetUp CKAN
 ADD ./ckan_setup/ckan $CKAN_HOME/src/ckan/
-RUN ckan-pip install -e $CKAN_HOME/src/ckan/ \
-    && ln -s $CKAN_HOME/src/ckan/ckan/config/who.ini $CKAN_CONFIG/who.ini
+RUN ckan-pip install -e $CKAN_HOME/src/ckan/ && \
+    ln -s $CKAN_HOME/src/ckan/ckan/config/who.ini $CKAN_CONFIG/who.ini
 
 ADD ./ckan_setup/ckan/conf/create_admin_user.sh /opt/ckan/create_admin_user.sh
 ADD ./ckan_setup/ckan/conf/ckan.ini.template /etc/ckan/default/ckan.ini.template
@@ -109,8 +109,8 @@ ADD ./ckan_setup/conf/rebuild-index.sh /rebuild-index.sh
 ADD ./ckan_setup/conf/rebuild-index-cron /etc/cron.d/rebuild-index-cron
 
 # grant scripts execution rights
-RUN chmod +x /rebuild-index.sh \
-    && chmod 0644 /etc/cron.d/rebuild-index-cron
+RUN chmod +x /rebuild-index.sh && \
+    chmod 0644 /etc/cron.d/rebuild-index-cron
 
 # S3 secrets
 RUN pip install awscli

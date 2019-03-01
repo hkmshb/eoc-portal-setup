@@ -9,7 +9,7 @@ allow the setup use local repositories of target CKAN extensions.
 
 ## Running
 
-``` ash
+```bash
 # just the CKAN stack
 $ ./manage.sh ckan --up
 
