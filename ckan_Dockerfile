@@ -75,16 +75,6 @@ RUN cd $CKAN_HOME/src \
 # install eHA EOC Extensions
 COPY ./extensions $CKAN_HOME/src/extensions/
 
-## NOTE: commeted out because it doesn't carry throught
-## because extensions has been added as a mapped volume
-## install ckanext-eoc extension
-# RUN cd $CKAN_HOME/src/extensions/ \
-#     && ckan-pip install -e ckanext-eoc \
-#     && ckan-pip install -r ckanext-eoc/requirements.txt \
-#     # Install Gather 2 Integration
-#     && ckan-pip install -e gather2_integration \
-#     && ckan-pip install -r gather2_integration/requirements.txt
-
 # TMP-BUGFIX https://github.com/ckan/ckan/issues/3388
 ADD ./ckan_setup/ckan/dev-requirements.txt $CKAN_HOME/src/ckan/dev-requirements.txt
 RUN ckan-pip install --upgrade -r $CKAN_HOME/src/ckan/dev-requirements.txt \

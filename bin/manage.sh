@@ -1,5 +1,5 @@
 #!/bin/bash
-set -eux
+set -eu
 
 show_help() {
   echo """
@@ -10,8 +10,7 @@ show_help() {
     init            : setup a clean dev env
     prepare-build   : setup the env for a build
     build           : builds the docker contains for all defined services
-
-
+    ckan-up         : starts the docker services needed to run EOC portal
 
     deprecated?
       elk [--rebuild] [--up]          : manages the elk setup for eoc
@@ -43,8 +42,8 @@ perform_init() {
     git clone https://github.com/eHealthAfrica/ckanext-eoc.git extensions/ckanext-eoc
   fi
 
-  if [[ ! -d extensions/gather2_integration ]]; then
-    git clone https://github.com/eHealthAfrica/gather2_integration.git extensions/gather2_integration
+  if [[ ! -d extensions/ckanext-gather ]]; then
+    git clone https://github.com/eHealthAfrica/gather2_integration.git extensions/ckanext-gather
   fi
 
   if [[ ! -d ckan_elk ]]; then
@@ -117,6 +116,10 @@ perform_build() {
 
   cp sync_cronjob_Dockerfile sync_cronjob/Dockerfile
   cp solr_Dockerfile ckan/contrib/docker/solr/Dockerfile
+
+  docker-compose build ckan
+  docker-compose build solr
+  docker-compose build datapusher
 }
 
 perform_task() {
@@ -176,7 +179,6 @@ case "$*" in
   ;;
   ckan-up )
     source .env
-    perform_build
     docker-compose up db redis solr ckan
   ;;
   * )
