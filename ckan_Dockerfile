@@ -43,12 +43,18 @@ RUN mv -f geckodriver /usr/local/share/geckodriver && \
 RUN mkdir -p $CKAN_HOME $CKAN_CONFIG $CKAN_STORAGE_PATH && \
     virtualenv $CKAN_HOME && \
     ln -s $CKAN_HOME/bin/pip /usr/local/bin/ckan-pip && \
-    ln -s $CKAN_HOME/bin/paster /usr/local/bin/ckan-paster && \
-    ckan-pip install setuptools==35.0
+    ln -s $CKAN_HOME/bin/paster /usr/local/bin/ckan-paster
 
-# install ckan requirements
-ADD ./ckan_setup/ckan/requirements.txt $CKAN_HOME/src/ckan/requirements.txt
-RUN ckan-pip install --upgrade -r $CKAN_HOME/src/ckan/requirements.txt
+# setup CKAN
+ADD ./ckan_setup/ckan $CKAN_HOME/src/ckan/
+RUN ckan-pip install --upgrade pip && \
+    ckan-pip install setuptools==35.0 && \
+    ckan-pip install --upgrade --no-cache-dir -r ${CKAN_HOME}/src/ckan/requirements.txt && \
+    ckan-pip install -e ${CKAN_HOME}/src/ckan/ && \
+    ln -s ${CKAN_HOME}/src/ckan/ckan/config/who.ini $CKAN_CONFIG/who.ini
+
+# TMP-BUGFIX https://github.com/ckan/ckan/issues/3388
+RUN ckan-pip install --upgrade --no-cache -r ${CKAN_HOME}/src/ckan/dev-requirements.txt
 
 # install third-party extensions
 RUN cd $CKAN_HOME/src && \
@@ -71,37 +77,25 @@ RUN cd $CKAN_HOME/src && \
     ckan-pip install -e "git+https://github.com/eHealthAfrica/ckanext-requestdata.git@v2.1.7.9rc#egg=ckanext-requestdata" && \
     ckan-pip install -r ${CKAN_HOME}/src/ckanext-requestdata/requirements.txt
 
-
-# install eHA EOC Extensions
-COPY ./extensions $CKAN_HOME/src/extensions/
-
-## NOTE: commented out because it doesn't carry through
-## because extensions has been added as a mapped volume
-## install ckanext-eoc extension
-# RUN cd $CKAN_HOME/src/extensions/ \
-#     && ckan-pip install -e ckanext-eoc \
-#     && ckan-pip install -r ckanext-eoc/requirements.txt \
-#     # Install Gather 2 Integration
-#     && ckan-pip install -e gather2_integration \
-#     && ckan-pip install -r gather2_integration/requirements.txt
-
-# TMP-BUGFIX https://github.com/ckan/ckan/issues/3388
-ADD ./ckan_setup/ckan/dev-requirements.txt $CKAN_HOME/src/ckan/dev-requirements.txt
-RUN ckan-pip install --upgrade -r $CKAN_HOME/src/ckan/dev-requirements.txt \
-    && ckan-pip install --upgrade requests
-
-# SetUp CKAN
-ADD ./ckan_setup/ckan $CKAN_HOME/src/ckan/
-RUN ckan-pip install -e $CKAN_HOME/src/ckan/ && \
-    ln -s $CKAN_HOME/src/ckan/ckan/config/who.ini $CKAN_CONFIG/who.ini
-
-ADD ./ckan_setup/ckan/conf/create_admin_user.sh /opt/ckan/create_admin_user.sh
-ADD ./ckan_setup/ckan/conf/ckan.ini.template /etc/ckan/default/ckan.ini.template
-
-ADD https://github.com/vishnubob/wait-for-it/raw/master/wait-for-it.sh /opt/ckan/wait-for-it.sh
-
-# run analytics set up
+# add files required by google-analytics
 COPY ./ckan_setup/conf/credentials.json.enc $CKAN_HOME/src/ckanext-googleanalytics/
+
+# setup third-party tools & local scripts
+# note AWS cli tools need to be installed outside virtualenv
+ADD https://github.com/vishnubob/wait-for-it/raw/master/wait-for-it.sh /opt/ckan/wait-for-it.sh
+RUN pip install awscli && \
+    ln -s ${CKAN_HOME}/src/ckan/conf/create_admin_user.sh /opt/ckan/create_admin_user.sh && \
+    ln -s ${CKAN_HOME}/src/ckan/conf/ckan.ini.template ${CKAN_CONFIG}/ckan.ini.template
+
+# setup eHA EOC Extensions
+COPY ./extensions ${CKAN_HOME}/src/extensions/
+RUN cd ${CKAN_HOME}/src/extensions/ && \
+    # Install Gather 2 Integration
+    ckan-pip install -e ${CKAN_HOME}/src/extensions/gather2_integration && \
+    ckan-pip install -r ${CKAN_HOME}/src/extensions/gather2_integration/requirements.txt && \
+    # Install EOC extension
+    ckan-pip install -e ${CKAN_HOME}/src/extensions/ckanext-eoc && \
+    ckan-pip install -r ${CKAN_HOME}/src/extensions/ckanext-eoc/requirements.txt
 
 # setup supervisor & cron jobs
 ADD ./ckan_setup/conf/supervisor /etc/supervisor/conf.d
@@ -112,18 +106,14 @@ ADD ./ckan_setup/conf/rebuild-index-cron /etc/cron.d/rebuild-index-cron
 RUN chmod +x /rebuild-index.sh && \
     chmod 0644 /etc/cron.d/rebuild-index-cron
 
-# S3 secrets
-RUN pip install awscli
-
 # SetUp EntryPoint
 COPY ./ckan-entrypoint.sh /
 COPY ./ckan_setup/conf/entrypoint.sh /
 RUN chmod +x /ckan-entrypoint.sh /opt/ckan/wait-for-it.sh /opt/ckan/create_admin_user.sh /entrypoint.sh
+
 ENTRYPOINT ["/entrypoint.sh"]
 
 # Volumes
 VOLUME ["/etc/ckan/default"]
 VOLUME ["/var/lib/ckan"]
 EXPOSE 5000
-
-# CMD ["ckan-paster","serve","/etc/ckan/default/ckan.ini"]

@@ -17,14 +17,6 @@ cat /etc/ckan/default/ckan.ini.template | envsubst >/etc/ckan/default/ckan.ini
 # wait a bit more
 sleep 5
 
-# install extensionss
-cd $CKAN_HOME/src/extensions
-# Install EOC Extension
-ckan-pip install -e ckanext-eoc
-ckan-pip install -r ckanext-eoc/requirements.txt
-# Install Gather 2 Integration
-ckan-pip install -e gather2_integration
-ckan-pip install -r gather2_integration/requirements.txt
 
 openssl enc -d  -aes-256-cbc  -k "${GOOGLE_ANALYTICS_KEY}" -a -salt \
    -in $CKAN_HOME/src/ckanext-googleanalytics/credentials.json.enc \

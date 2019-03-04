@@ -118,6 +118,9 @@ perform_build() {
 
   cp sync_cronjob_Dockerfile sync_cronjob/Dockerfile
   cp solr_Dockerfile ckan/contrib/docker/solr/Dockerfile
+
+  echo ">> (re)-build images ..."
+  docker-compose build ckan
 }
 
 perform_task() {
@@ -177,7 +180,6 @@ case "$*" in
   ;;
   ckan-up )
     source .env
-    perform_build
     docker-compose up db redis solr ckan
   ;;
   * )
