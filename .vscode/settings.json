@@ -1,3 +1,17 @@
 {
-    "python.pythonPath": "/Users/eHA-Abdulhakeem/.pyenv/versions/2.7.14/bin/python"
+    "python.pythonPath": "/Users/eHA-Abdulhakeem/.pyenv/versions/2.7.14/bin/python",
+    "workbench.colorCustomizations": {
+        "activityBar.background": "#019f1c",
+        "activityBar.foreground": "#e7e7e7",
+        "activityBar.inactiveForeground": "#e7e7e799",
+        "activityBarBadge.background": "#4721fe",
+        "activityBarBadge.foreground": "#e7e7e7",
+        "titleBar.activeBackground": "#016c13",
+        "titleBar.inactiveBackground": "#016c1399",
+        "titleBar.activeForeground": "#e7e7e7",
+        "titleBar.inactiveForeground": "#e7e7e799",
+        "statusBar.background": "#016c13",
+        "statusBarItem.hoverBackground": "#019f1c",
+        "statusBar.foreground": "#e7e7e7"
+    }
 }

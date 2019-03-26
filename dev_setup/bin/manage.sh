@@ -59,7 +59,10 @@ perform_prepare_build() {
 
   source .env
   export HOSTNAME=${HOSTNAME}
-  export POSTGRES_PASSWORD="pg"
+
+  ## default creds for docker db
+  export POSTGRES_USER=${POSTGRES_USER}
+  export POSTGRES_PASSWORD=${POSTGRES_PASS}
   
   export CKAN_SITE_URL=${CKAN_SITE_URL}
   export CKAN_DB_HOST=${CKAN_DB_HOST}
@@ -70,13 +73,17 @@ perform_prepare_build() {
   
   export DATASTORE_NAME=${DATASTORE_NAME}
   export DATASTORE_USERNAME=${DATASTORE_USERNAME}
-  export DATASTORE_PASSWORD=${DATASTORE_PASSWORD}
+  export DATA_STORE_PASSWORD=${DATASTORE_PASSWORD}
 
   export SMTP_SERVER=${SMTP_SERVER}
   export SMTP_USER=${SMTP_USER}
   export SMTP_PASSWORD=${SMTP_PASSWORD}
 
   export DEBUG=${DEBUG}
+
+  export LOGSTASH_DBHOST=${LOGSTASH_DBHOST}
+  export LOGSTASH_DBUSER=${LOGSTASH_DBUSER}
+  export LOGSTASH_DBPASS=${LOGSTASH_DBPASS}
 
   #export GOOGLE_ANALYTICS_KEY="$(credstash get ckan-eocng-dev-analytics-key)"
   #export GOOGLE_EMAIL="$(credstash get ckan-eocng-dev-email-username)"
@@ -165,6 +172,15 @@ perform_task() {
   fi
 }
 
+sync_elk2orig() {
+  src=ckan_elk/logstash
+  dst=ckan_setup/elk/logstash
+
+	rsync -a ${src}/pipeline/* ${dst}/pipeline
+	rsync -a ${src}/mapping/* ${dst}/mapping
+	rsync -a ${src}/sql/* ${dst}/sql
+}
+
 case "$*" in
   help )
     show_help
@@ -181,6 +197,9 @@ case "$*" in
   ckan-up )
     source .env
     docker-compose up db redis solr ckan
+  ;;
+  sync-elk2orig )
+    sync_elk2orig
   ;;
   * )
     show_help

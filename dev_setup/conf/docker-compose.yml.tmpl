@@ -4,10 +4,12 @@ services:
   db:
     image: postgres:9.6
     environment:
+      POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_USER: postgres
+    ports:
+      - "5433:5432"
     volumes:
-      - ./ckan_data/db-data:/var/lib/postgresql/data
+      - ./dev_setup/_data/db-data:/var/lib/postgresql/data
       - ./ckan_setup/conf/postgres:/docker-entrypoint-initdb.d/
     networks:
       local:
@@ -68,6 +70,9 @@ services:
       GOOGLE_ANALYTICS_KEY: ${GOOGLE_ANALYTICS_KEY}
       GATHER2_API_KEY: ${GATHER2_API_KEY}
       GATHER2_RESPONSES_URL: ${GATHER2_RESPONSES_URL}
+      POSTGRES_USER: ${LOGSTASH_DBUSER}
+      POSTGRES_PASSWORD: ${LOGSTASH_DBPASS}
+      POSTGRES_HOST: ${LOGSTASH_DBHOST}
     command: start
     links:
       - db:db
@@ -76,8 +81,8 @@ services:
     ports:
       - "5000:5000"
     volumes:
-      - ./ckan_data/ckan-data:/var/lib/ckan
-      - ./ckan_data/logstash-data:/var/lib/ckan/storage
+      - ./dev_setup/_data/ckan-data:/var/lib/ckan
+      # - ./dev_setup/_data/logstash-data:/var/lib/ckan/storage
       - ./extensions:/usr/lib/ckan/default/src/extensions
     networks:
       local:
@@ -151,17 +156,19 @@ services:
       - ./ckan_setup/elk/logstash/mapping:/usr/share/logstash/mapping:ro
       - ./ckan_setup/elk/logstash/sql:/usr/share/logstash/sql:ro
       - ./ckan_setup/elk/logstash/_logs:/usr/share/logstash/logs:ro
-      - ./ckan_data/logstash-data:/usr/share/logstash/files
+      - ./ckan_data/ckan-data/storage:/usr/share/logstash/files
     ports:
       - "5001:5000"
     environment:
       LS_JAVA_OPTS: "-Xmx512m -Xms512m"
-      JDBC_STRING: jdbc:postgresql://host.docker.internal/eha
-      POSTGRES_USER: 'hkmshb'
-      POSTGRES_PASSWORD: '0p3n'
-      CKAN_DB_HOST: host.docker.internal
-      PSQL_USER: hkmshb
-      PSQL_PASSWORD: 0p3n
+      # confs used by entrypoint.sh
+      CKAN_DB_HOST: ${LOGSTASH_DBHOST}
+      POSTGRES_USER: ${LOGSTASH_DBUSER}
+      POSTGRES_PASSWORD: ${LOGSTASH_DBPASS}
+      # confs used by pipelines for db access
+      PSQL_USER: ${LOGSTASH_DBUSER}
+      PSQL_PASSWORD: ${LOGSTASH_DBPASS}
+      JDBC_STRING: "jdbc:postgresql://${LOGSTASH_DBHOST}:5432"
       ES_HOST: elasticsearch:9200
     command: start-prod
     networks:
@@ -169,6 +176,7 @@ services:
         aliases:
           - logstash
     depends_on:
+      - db
       - elasticsearch
 
 volumes:
