@@ -38,6 +38,6 @@ are reported as not found; however if the mapped volume is dropped everything wo
 expected.
 
 Work around: leave the mapped volume active, docker up then shell into the ckan container
-from there manually install all affectec extensions in develop mode. This should create
+from there manually install all affected extensions in develop mode. This should create
 the necessary `.egg-info` directories which will allow subsequent runs to run without
 any need for the manual workaroud.

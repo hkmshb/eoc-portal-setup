@@ -18,16 +18,19 @@ clean:
 prepare-build:
 	./dev_setup/bin/manage.sh prepare-build
 
+build:
+	./dev_setup/bin/manage.sh build
+
 ckan-build:
 	docker-compose build ckan
 
-ckan-up:
+up-ckan:
 	docker-compose up db redis datapusher ckan
 
-start-elk:
+up-elk:
 	docker-compose up elasticsearch logstash kibana
 
-start:
+up:
 	docker-compose up
 
 stop:
@@ -37,3 +40,6 @@ sync-elk2orig:
 	@echo "syncing local logstash config to ${dst}...\n"
 	./dev_setup/bin/manage.sh sync-elk2orig
 	@echo done
+
+test:
+	pycodestyle --count --ignore=E501,E731 ./extensions/ckanext-eoc/ckanext/eoc
