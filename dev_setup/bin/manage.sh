@@ -92,7 +92,7 @@ perform_prepare_build() {
   #export AWS_ACCESS_KEY="$(credstash get ckan_dev_aws_access_key)"
   #export AWS_SECRET_KEY="$(credstash get ckan_dev_aws_secret_key)"
 
-  cat conf/docker-compose.yml.tmpl | envsubst >docker-compose.yml
+  cat dev_setup/conf/docker-compose.yml.tmpl | envsubst >docker-compose.yml
   cat ckan_setup/conf/postgres/ckan_init.sql.template | envsubst >ckan_setup/conf/postgres/ckan_init.sql
 
   perform_build

@@ -72,10 +72,7 @@ RUN cd $CKAN_HOME/src && \
     ckan-pip install -e "git+https://${GITHUB_TOKEN}@github.com/eHealthAfrica/ckanext-validation.git@v0.0.3a#egg=ckanext-validation" && \
     ckan-pip install -r ${CKAN_HOME}/src/ckanext-validation/requirements.txt && \
     # install Geospatial View
-    ckan-pip install ckanext-geoview && \
-    # Install CKAN Data requests
-    ckan-pip install -e "git+https://github.com/eHealthAfrica/ckanext-requestdata.git@v2.1.7.9rc#egg=ckanext-requestdata" && \
-    ckan-pip install -r ${CKAN_HOME}/src/ckanext-requestdata/requirements.txt
+    ckan-pip install ckanext-geoview
 
 # add files required by google-analytics
 COPY ./ckan_setup/conf/credentials.json.enc $CKAN_HOME/src/ckanext-googleanalytics/
@@ -84,6 +81,7 @@ COPY ./ckan_setup/conf/credentials.json.enc $CKAN_HOME/src/ckanext-googleanalyti
 # note AWS cli tools need to be installed outside virtualenv
 ADD https://github.com/vishnubob/wait-for-it/raw/master/wait-for-it.sh /opt/ckan/wait-for-it.sh
 RUN pip install awscli && \
+    pip install supervisor-stdout && \
     ln -s ${CKAN_HOME}/src/ckan/conf/create_admin_user.sh /opt/ckan/create_admin_user.sh && \
     ln -s ${CKAN_HOME}/src/ckan/conf/ckan.ini.template ${CKAN_CONFIG}/ckan.ini.template
 
@@ -98,7 +96,7 @@ RUN cd ${CKAN_HOME}/src/extensions/ && \
     ckan-pip install -r ${CKAN_HOME}/src/extensions/ckanext-eoc/requirements.txt
 
 # setup supervisor & cron jobs
-ADD ./conf/supervisor /etc/supervisor/conf.d
+ADD ./dev_setup/conf/supervisor /etc/supervisor/conf.d
 ADD ./ckan_setup/conf/rebuild-index.sh /rebuild-index.sh
 ADD ./ckan_setup/conf/rebuild-index-cron /etc/cron.d/rebuild-index-cron
 
@@ -107,7 +105,7 @@ RUN chmod +x /rebuild-index.sh && \
     chmod 0644 /etc/cron.d/rebuild-index-cron
 
 # SetUp EntryPoint
-COPY ./conf/ckan-entrypoint.sh /
+COPY ./dev_setup/conf/ckan-entrypoint.sh /
 COPY ./ckan_setup/conf/entrypoint.sh /
 RUN chmod +x /ckan-entrypoint.sh /opt/ckan/wait-for-it.sh /opt/ckan/create_admin_user.sh /entrypoint.sh
 
