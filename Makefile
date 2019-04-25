@@ -13,6 +13,7 @@ install:
 	./dev_setup/bin/manage.sh init
 
 clean:
+	@echo "dropping ckan data files & db files"
 	rm -rf ./dev_setup/_data/ckan-data ./dev_setup/_data/db-data
 
 prepare-build:
@@ -24,13 +25,13 @@ build:
 ckan-build:
 	docker-compose build ckan
 
-up-ckan:
-	docker-compose up db redis datapusher ckan
+up:
+	docker-compose up db redis ckan
 
 up-elk:
 	docker-compose up elasticsearch logstash kibana
 
-up:
+up-all:
 	docker-compose up
 
 stop:
