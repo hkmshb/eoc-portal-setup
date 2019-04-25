@@ -15,6 +15,7 @@ services:
       local:
         aliases:
           - db
+
   solr:
     build: ./ckan_setup/ckan/contrib/docker/solr
     ports:
@@ -23,6 +24,7 @@ services:
       local:
         aliases:
           - solr
+
   redis:
     image: redis
     ports:
@@ -31,6 +33,7 @@ services:
       local:
         aliases:
           - redis
+
   datapusher:
     build: ./ckan_setup/datapusher
     ports:
@@ -43,6 +46,7 @@ services:
           - datapusher
     environment:
       REQUESTS_CA_BUNDLE: "/usr/src/app/cert.pem"
+
   ckan:
     build:
       context: .
@@ -112,78 +116,78 @@ services:
   #   environment:
   #     PGPASSWORD: ${POSTGRES_PASSWORD_DEV}
 
-  elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch-oss:6.2.3
-    build:
-      context: ckan_elk/elasticsearch/
-      args:
-        ELK_VERSION: ${ELK_VERSION}
-    ports:
-      - "9200:9200"
-      - "9300:9300"
-    environment:
-      ES_JAVA_OPTS: "-Xmx256m -Xms256m"
-    networks:
-      local:
-        aliases:
-          - elasticsearch
+  # elasticsearch:
+  #   image: docker.elastic.co/elasticsearch/elasticsearch-oss:6.2.3
+  #   build:
+  #     context: ckan_elk/elasticsearch/
+  #     args:
+  #       ELK_VERSION: ${ELK_VERSION}
+  #   ports:
+  #     - "9200:9200"
+  #     - "9300:9300"
+  #   environment:
+  #     ES_JAVA_OPTS: "-Xmx256m -Xms256m"
+  #   networks:
+  #     local:
+  #       aliases:
+  #         - elasticsearch
 
-  kibana:
-    build:
-      context: ckan_elk/kibana/
-      args:
-        ELK_VERSION: ${ELK_VERSION}
-    volumes:
-      - ./ckan_elk/kibana/config/:/usr/share/kibana/config:ro
-    ports:
-      - "5601:5601"
-    links:
-      - elasticsearch:elasticsearch
-    networks:
-      local:
-        aliases:
-        - kibana
-    depends_on:
-      - elasticsearch
+  # kibana:
+  #   build:
+  #     context: ckan_elk/kibana/
+  #     args:
+  #       ELK_VERSION: ${ELK_VERSION}
+  #   volumes:
+  #     - ./ckan_elk/kibana/config/:/usr/share/kibana/config:ro
+  #   ports:
+  #     - "5601:5601"
+  #   links:
+  #     - elasticsearch:elasticsearch
+  #   networks:
+  #     local:
+  #       aliases:
+  #       - kibana
+  #   depends_on:
+  #     - elasticsearch
 
-  logstash:
-    build:
-      context: ./ckan_setup/elk/logstash/
-    volumes:
-      - ./ckan_setup/elk/logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml:ro
-      - ./ckan_setup/elk/logstash/dictionary:/usr/share/logstash/dictionary:ro
-      - ./ckan_setup/elk/logstash/pipeline:/usr/share/logstash/pipeline:ro
-      - ./ckan_setup/elk/logstash/mapping:/usr/share/logstash/mapping:ro
-      - ./ckan_setup/elk/logstash/sql:/usr/share/logstash/sql:ro
-      - ./ckan_setup/elk/logstash/_logs:/usr/share/logstash/logs:ro
-      - ./ckan_data/ckan-data/storage:/usr/share/logstash/files
-    ports:
-      - "5001:5000"
-    environment:
-      LS_JAVA_OPTS: "-Xmx512m -Xms512m"
-      # confs used by entrypoint.sh
-      CKAN_DB_HOST: ${LOGSTASH_DBHOST}
-      POSTGRES_USER: ${LOGSTASH_DBUSER}
-      POSTGRES_PASSWORD: ${LOGSTASH_DBPASS}
-      # confs used by pipelines for db access
-      PSQL_USER: ${LOGSTASH_DBUSER}
-      PSQL_PASSWORD: ${LOGSTASH_DBPASS}
-      JDBC_STRING: "jdbc:postgresql://${LOGSTASH_DBHOST}:5432"
-      ES_HOST: elasticsearch:9200
-    command: start-prod
-    networks:
-      local:
-        aliases:
-          - logstash
-    depends_on:
-      - db
-      - elasticsearch
+  # logstash:
+  #   build:
+  #     context: ./ckan_setup/elk/logstash/
+  #   volumes:
+  #     - ./ckan_setup/elk/logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml:ro
+  #     - ./ckan_setup/elk/logstash/dictionary:/usr/share/logstash/dictionary:ro
+  #     - ./ckan_setup/elk/logstash/pipeline:/usr/share/logstash/pipeline:ro
+  #     - ./ckan_setup/elk/logstash/mapping:/usr/share/logstash/mapping:ro
+  #     - ./ckan_setup/elk/logstash/sql:/usr/share/logstash/sql:ro
+  #     - ./ckan_setup/elk/logstash/_logs:/usr/share/logstash/logs:ro
+  #     - ./ckan_data/ckan-data/storage:/usr/share/logstash/files
+  #   ports:
+  #     - "5001:5000"
+  #   environment:
+  #     LS_JAVA_OPTS: "-Xmx512m -Xms512m"
+  #     # confs used by entrypoint.sh
+  #     CKAN_DB_HOST: ${LOGSTASH_DBHOST}
+  #     POSTGRES_USER: ${LOGSTASH_DBUSER}
+  #     POSTGRES_PASSWORD: ${LOGSTASH_DBPASS}
+  #     # confs used by pipelines for db access
+  #     PSQL_USER: ${LOGSTASH_DBUSER}
+  #     PSQL_PASSWORD: ${LOGSTASH_DBPASS}
+  #     JDBC_STRING: "jdbc:postgresql://${LOGSTASH_DBHOST}:5432"
+  #     ES_HOST: elasticsearch:9200
+  #   command: start-prod
+  #   networks:
+  #     local:
+  #       aliases:
+  #         - logstash
+  #   depends_on:
+  #     - db
+  #     - elasticsearch
 
 volumes:
   db-data:
   solr-data:
   ckan-data:
-  logstash-data:
+  # logstash-data:
 
 networks:
   local:

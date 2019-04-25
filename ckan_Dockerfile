@@ -96,16 +96,17 @@ RUN cd ${CKAN_HOME}/src/extensions/ && \
     ckan-pip install -r ${CKAN_HOME}/src/extensions/ckanext-eoc/requirements.txt
 
 # setup supervisor & cron jobs
-ADD ./dev_setup/conf/supervisor /etc/supervisor/conf.d
+ADD ./ckan_setup/conf/supervisor /etc/supervisor/conf.d
 ADD ./ckan_setup/conf/rebuild-index.sh /rebuild-index.sh
 ADD ./ckan_setup/conf/rebuild-index-cron /etc/cron.d/rebuild-index-cron
+ADD ./dev_setup/conf/supervisor/supervisor-ckan-server.conf /etc/supervisor/conf.d/supervisor-ckan-server.conf
 
 # grant scripts execution rights
 RUN chmod +x /rebuild-index.sh && \
     chmod 0644 /etc/cron.d/rebuild-index-cron
 
 # SetUp EntryPoint
-COPY ./dev_setup/conf/ckan-entrypoint.sh /
+COPY ./ckan_setup/conf/ckan-entrypoint.sh /
 COPY ./ckan_setup/conf/entrypoint.sh /
 RUN chmod +x /ckan-entrypoint.sh /opt/ckan/wait-for-it.sh /opt/ckan/create_admin_user.sh /entrypoint.sh
 
