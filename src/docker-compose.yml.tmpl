@@ -1,0 +1,117 @@
+version: '3.0'
+
+services:
+  db:
+    image: postgres:9.6
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "5433:5432"
+    volumes:
+      - ./_volumes/db-data:/var/lib/postgresql/data
+      - ./ckan_setup/conf/postgres:/docker-entrypoint-initdb.d/
+    networks:
+      local:
+        aliases:
+          - db
+
+  solr:
+    build: ./ckan_setup/ckan/contrib/docker/solr
+    ports:
+     - "8983:8983"
+    networks:
+      local:
+        aliases:
+          - solr
+
+  redis:
+    image: redis
+    ports:
+     - "6379:6379"
+    networks:
+      local:
+        aliases:
+          - redis
+
+  datapusher:
+    build: ./ckan_setup/datapusher
+    ports:
+      - "8800:8800"
+    links:
+      - ckan:ckan
+    networks:
+      local:
+        aliases:
+          - datapusher
+    environment:
+      REQUESTS_CA_BUNDLE: "/usr/src/app/cert.pem"
+
+  ckan:
+    build:
+      context: .
+      dockerfile: ckan_Dockerfile
+      args:
+        GITHUB_TOKEN: ${GITHUB_TOKEN}
+        TEMP_GITHUB_TOKEN: ${TEMP_GITHUB_TOKEN}
+    environment:
+      CKAN_SITE_URL: ${CKAN_SITE_URL}
+      CKAN_DB_USER: ${CKAN_DB_USER}
+      CKAN_DB_PASSWORD: ${CKAN_DB_PASSWORD}
+      CKAN_DB_HOST: ${CKAN_DB_HOST}
+      CKAN_DB_NAME: ${CKAN_DB_NAME}
+      CKAN_API_KEY: ${CKAN_API_KEY}
+      DATASTORE_NAME: ${DATASTORE_NAME}
+      DATASTORE_USERNAME: ${DATASTORE_USERNAME}
+      DATA_STORE_PASSWORD: ${DATASTORE_PASSWORD}
+      DEBUG: "${DEBUG}"
+      ENV: "prod"
+      SMTP_SERVER: ${SMTP_SERVER}
+      SMTP_USER: ${SMTP_USER}
+      SMTP_PASSWORD: ${SMTP_PASSWORD}
+      GOOGLE_EMAIL: ${GOOGLE_EMAIL}
+      GOOGLE_PASSWORD: ${GOOGLE_PASSWORD}
+      GOOGLE_ANALYTICS_KEY: ${GOOGLE_ANALYTICS_KEY}
+      GATHER2_API_KEY: ${GATHER2_API_KEY}
+      GATHER2_RESPONSES_URL: ${GATHER2_RESPONSES_URL}
+      POSTGRES_USER: ${LOGSTASH_DBUSER}
+      POSTGRES_PASSWORD: ${LOGSTASH_DBPASS}
+      POSTGRES_HOST: ${LOGSTASH_DBHOST}
+    command: start
+    links:
+      - db:db
+      - solr:solr
+      - redis:redis
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./_volumes/ckan-data:/var/lib/ckan
+      # - ./_volumes/logstash-data:/var/lib/ckan/storage
+      - ./src/extensions:/usr/lib/ckan/default/src/extensions
+    networks:
+      local:
+        aliases:
+          - ckan
+
+  # nginx:
+  #   build:
+  #     context: nginx
+  #   ports:
+  #     - "80:80"
+  #     - "443:443"
+  #   links:
+  #     - ckan:ckan
+  #     - datapusher:datapusher
+  #   networks:
+  #     local:
+  #       aliases:
+  #         - data-eocng.local
+  #         - nginx
+
+volumes:
+  db-data:
+  solr-data:
+  ckan-data:
+
+networks:
+  local:

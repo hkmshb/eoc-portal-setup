@@ -2,19 +2,19 @@
 __pycache__
 *.py[cdo]
 
+
 # code dirs
-_data/
-ckan_elk/
-ckan_data/
 ckan_setup/
-extensions/
+src/extensions/
+
 
 # data dirs
-eoc-elk/
-_elk/
-
+_volumes
 docker-compose.yml
+.env
+
+
+# misc
 .DS_Store
 [._]tmp/
 .venv
-.env

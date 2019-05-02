@@ -1,7 +1,6 @@
 # docker build . -t ckan && docker run -d -p 80:5000 --link db:db --link redis:redis --link solr:solr ckan
 
 FROM ubuntu:16.04
-LABEL MAINTAINER="lutz.paelike@ehealthafrica.org"
 LABEL MAINTAINER="abdulhakeem.shaibu@ehealthafrica.org"
 
 ARG GITHUB_TOKEN
@@ -86,7 +85,7 @@ RUN pip install awscli && \
     ln -s ${CKAN_HOME}/src/ckan/conf/ckan.ini.template ${CKAN_CONFIG}/ckan.ini.template
 
 # setup eHA EOC Extensions
-COPY ./extensions ${CKAN_HOME}/src/extensions/
+COPY ./src/extensions ${CKAN_HOME}/src/extensions/
 RUN cd ${CKAN_HOME}/src/extensions/ && \
     # Install Gather 2 Integration
     ckan-pip install -e ${CKAN_HOME}/src/extensions/gather2_integration && \
@@ -99,7 +98,7 @@ RUN cd ${CKAN_HOME}/src/extensions/ && \
 ADD ./ckan_setup/conf/supervisor /etc/supervisor/conf.d
 ADD ./ckan_setup/conf/rebuild-index.sh /rebuild-index.sh
 ADD ./ckan_setup/conf/rebuild-index-cron /etc/cron.d/rebuild-index-cron
-ADD ./dev_setup/conf/supervisor/supervisor-ckan-server.conf /etc/supervisor/conf.d/supervisor-ckan-server.conf
+ADD ./src/conf/supervisor-ckan-server.conf /etc/supervisor/conf.d/supervisor-ckan-server.conf
 
 # grant scripts execution rights
 RUN chmod +x /rebuild-index.sh && \

@@ -10,35 +10,29 @@ help:
 	@echo "  stop            to stop all running docker containers"
 
 install:
-	./dev_setup/bin/manage.sh init
+	./src/bin/manage.sh init
 
 clean:
-	rm -rf ./dev_setup/_data/ckan-data ./dev_setup/_data/db-data
+	rm -rf ./_volumes/ckan-data ./_volumes/db-data
 
 prepare-build:
-	./dev_setup/bin/manage.sh prepare-build
+	./src/bin/manage.sh prepare-build
 
 build:
-	./dev_setup/bin/manage.sh build
+	./src/bin/manage.sh build
 
 ckan-build:
 	docker-compose build ckan
 
 up:
-	docker-compose up -d db redis datapusher ckan
-
-up-elk:
-	docker-compose up elasticsearch logstash kibana
-
-up-all:
-	docker-compose up
+	docker-compose up -d
 
 stop:
 	docker-compose down
 
 sync-elk2orig:
 	@echo "syncing local logstash config to ${dst}...\n"
-	./dev_setup/bin/manage.sh sync-elk2orig
+	./src/bin/manage.sh sync-elk2orig
 	@echo done
 
 test:
