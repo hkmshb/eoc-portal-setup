@@ -24,13 +24,13 @@ build:
 ckan-build:
 	docker-compose build ckan
 
-up-ckan:
-	docker-compose up db redis datapusher ckan
+up:
+	docker-compose up -d db redis datapusher ckan
 
 up-elk:
 	docker-compose up elasticsearch logstash kibana
 
-up:
+up-all:
 	docker-compose up
 
 stop:

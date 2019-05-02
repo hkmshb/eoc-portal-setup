@@ -1,3 +1,6 @@
+import sys
+import json
+import os.path as fs
 
 
 def print_table(data):
@@ -21,3 +24,24 @@ def print_table(data):
             r += ['.'] * col_diff
 
         print(fmt.format(*r))
+
+
+def csv2json(path, fields):
+    # convert CSV input into JSON
+    path = fs.abspath(fs.expanduser(path))
+    if not (fs.exists(path) and fs.isfile(path)):
+        print(f"file not found: {path}")
+        sys.exit()
+
+    if not isinstance(fields, (list, tuple)):
+        fields = fields.strip().split(",")
+
+    entries = []
+    with open(path, 'r') as fp:
+        for ln in fp.readlines():
+            values = ln.strip().split(",")
+
+            entry = dict(zip(fields[:], values))
+            entries.append(entry)
+    print(entries)
+    return json.dumps(entries, indent=2)
