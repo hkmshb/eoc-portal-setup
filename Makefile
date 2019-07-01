@@ -36,4 +36,4 @@ sync-elk2orig:
 	@echo done
 
 test:
-	pycodestyle --count --ignore=E501,E731 ./extensions/ckanext-eoc/ckanext/eoc
+	pycodestyle --count --ignore=E501,E731 ./src/extensions/ckanext-eoc/ckanext/eoc

@@ -1,24 +1,88 @@
 #!/bin/bash
-set -eu
+set -e
+
+
+EOC_REPOS=( "ckanext-eoc" "gather2_integration" )
+PATH_REPOS=./src/extensions
+
+envvar_template() {
+  ENV_TEMPLATE="""
+  export DEBUG="true"
+  export HOSTNAME="eoc"
+
+  export POSTGRES_USER=
+  export POSTGRES_PASS=
+
+  export CKAN_VERSION=ckan-2.7.2
+  export CKAN_SITE_URL=http://${HOSTNAME}:5000/
+  export CKAN_DB_HOST=db
+  export CKAN_DB_USER=ckan
+  export CKAN_DB_NAME=ckan
+  export CKAN_DB_PASS=
+
+  export CKAN_HOME=/usr/lib/ckan/default
+  export CKAN_CONFIG=/etc/ckan/default
+  export CKAN_STORAGE_PATH=/var/lib/ckan
+
+  export DATASTORE_NAME=
+  export DATASTORE_USER=
+  export DATASTORE_PASS=
+
+  export SOLR_CORE=ckan
+  export SOLR_HOME=/opt/solr/server/solr/${SOLR_CORE}
+
+  export GATHER_API_KEY=
+  export GATHER_RESPONSES_URL=
+
+  export SMTP_SERVER
+  export SMTP_USER
+  export SMTP_PASS
+
+  export GOOGLE_EMAIL=
+  export GOOGLE_PASSWORD=
+  export GOOGLE_ANALYTICS_KEY=
+  export GOOGLE_CLIENT_ID=
+  export GOOGLE_CLIENT_SECRET=
+  export AWS_ACCESS_KEY=
+  export AWS_SECRET_KEY=
+  export GITHUB_TOKEN=
+  """
+}
+
 
 show_help() {
   echo """
   Utility script to help with routine EOC development tasks.
 
   COMMANDS:
-    help            : show this help message
-    init            : setup a clean dev env
-    prepare-build   : setup the env for a build
-    build           : builds the docker contains for all defined services
-    ckan-up         : starts up CKAN
-
-    deprecated?
-      elk [--rebuild] [--up]          : manages the elk setup for eoc
-      test-elk [--rebuild] [--up]     : manages the standalone elk setup (test setup)
-      rsync (to-test-elk | to-elk)    : syncs specific elk folder contents 
-                                          (from elk) to test-elk or
-                                          (from test-elk) to elk
+  -----------------------------------------------------------------------------
+  help            : show this help message
+  setup-devenv    : sets up the development environment
   """
+}
+
+setup_devenv() {
+  if [[ ! -d ${PATH_REPOS} ]]; then
+    echo "creating extensions folder ..."
+    mkdir -p ${PATH_REPOS}
+  fi
+
+  # clone repos locally
+  for repo in "${EOC_REPOS[@]}"
+    if [[ ! -d ${PATH_REPOS}/${repo} ]]; then
+      git clone git@github.com:eHealthAfrica/${repo}.git ${PATH_REPOS}/${repo}
+    else
+      echo "repo exists; ${repo}"
+    fi
+  done
+
+  # create .env file
+  if [[ ! -f ./.env ]]; then
+    echo "creating .env file ..."
+    echo envvar_template > ./.env
+  else
+    echo "file exists; .env"
+  fi
 }
 
 perform_init() {
@@ -182,26 +246,7 @@ sync_elk2orig() {
 }
 
 case "$*" in
-  help )
-    show_help
-  ;;
-  init )
-    perform_init
-  ;;
-  prepare-build )
-    perform_prepare_build
-  ;;
-  build )
-    perform_build
-  ;;
-  ckan-up )
-    source .env
-    docker-compose up db redis solr ckan
-  ;;
-  sync-elk2orig )
-    sync_elk2orig
-  ;;
-  * )
-    show_help
-  ;;
+  help         )  show_help ;;
+  setup-devenv )  setup_devenv ;;
+  *            )  show_help ;;
 esac

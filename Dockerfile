@@ -29,6 +29,11 @@ RUN apt-get -q -y update && apt-get -q -y upgrade \
         wget \
     && apt-get -q clean
 
+# Install Pip for Python2 using get-pip.py
+ADD https://bootstrap.pypa.io/get-pip.py /tmp/get-pip.py
+RUN /usr/bin/python2 /tmp/get-pip.py
+
+
 # install firefox and geckodriver for headless web access
 RUN wget -N https://github.com/mozilla/geckodriver/releases/download/v0.21.0/geckodriver-v0.21.0-linux64.tar.gz && \
     tar -xf geckodriver-v0.21.0-linux64.tar.gz && \
