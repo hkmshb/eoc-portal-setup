@@ -4,9 +4,7 @@ FROM ubuntu:16.04
 LABEL MAINTAINER="abdulhakeem.shaibu@ehealthafrica.org"
 
 ARG GITHUB_TOKEN
-ARG TEMP_GITHUB_TOKEN
-ENV GITHUB_TOKEN ${GITHUB_TOKEN}
-ENV TEMP_GITHUB_TOKEN ${TEMP_GITHUB_TOKEN}
+
 ENV CKAN_HOME /usr/lib/ckan/default
 ENV CKAN_CONFIG /etc/ckan/default
 ENV CKAN_STORAGE_PATH /var/lib/ckan
@@ -29,19 +27,18 @@ RUN apt-get -q -y update && apt-get -q -y upgrade \
         wget \
     && apt-get -q clean
 
-# Install Pip for Python2 using get-pip.py
-ADD https://bootstrap.pypa.io/get-pip.py /tmp/get-pip.py
-RUN /usr/bin/python2 /tmp/get-pip.py
+# # Install Pip for Python2 using get-pip.py
+# ADD https://bootstrap.pypa.io/get-pip.py /tmp/get-pip.py
+# RUN /usr/bin/python2 /tmp/get-pip.py
 
+# # install firefox and geckodriver for headless web access
+# RUN wget -N https://github.com/mozilla/geckodriver/releases/download/v0.21.0/geckodriver-v0.21.0-linux64.tar.gz && \
+#     tar -xf geckodriver-v0.21.0-linux64.tar.gz && \
+#     chmod +x geckodriver
 
-# install firefox and geckodriver for headless web access
-RUN wget -N https://github.com/mozilla/geckodriver/releases/download/v0.21.0/geckodriver-v0.21.0-linux64.tar.gz && \
-    tar -xf geckodriver-v0.21.0-linux64.tar.gz && \
-    chmod +x geckodriver
-
-RUN mv -f geckodriver /usr/local/share/geckodriver && \
-    ln -s /usr/local/share/geckodriver /usr/local/bin/geckodriver && \
-    ln -s /usr/local/share/geckodriver /usr/bin/geckodriver
+# RUN mv -f geckodriver /usr/local/share/geckodriver && \
+#     ln -s /usr/local/share/geckodriver /usr/local/bin/geckodriver && \
+#     ln -s /usr/local/share/geckodriver /usr/bin/geckodriver
 
 # setup ckan virtual env
 RUN mkdir -p $CKAN_HOME $CKAN_CONFIG $CKAN_STORAGE_PATH && \
