@@ -142,9 +142,10 @@ perform_build() {
   cp datapusher_Dockerfile datapusher/Dockerfile
   cp conf/datapusher_settings.py datapusher/deployment/datapusher_settings.py
   cp conf/datapusher_main.py datapusher/datapusher/main.py
+  cp solr_Dockerfile ckan/contrib/docker/solr/Dockerfile
 
   echo ">> (re)-build ckan image ..."
-  docker-compose build ckan
+  docker-compose build datapusher solr ckan
 }
 
 case "$*" in
