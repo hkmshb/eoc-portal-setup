@@ -19,7 +19,7 @@ function purge_env {
 }
 
 function fetch_codes {
-  local CKAN_VERSION=ckan-2.7.2
+  local CKAN_VERSION=${CKAN_VERSION}
   local DATAPUSHER_GIT_BRANCH=0.0.14
 
   local CKAN_GITHUB_BASEURL=git@github.com:ckan

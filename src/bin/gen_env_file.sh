@@ -23,6 +23,7 @@ function final_warning {
 function gen_env_file {
   local HOSTNAME=eoc
   local SOLR_CORE=ckan
+  local CKAN_VERSION=ckan-2.7.2
 
   cat << EOF
 #
