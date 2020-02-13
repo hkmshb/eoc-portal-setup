@@ -2,19 +2,13 @@
 __pycache__
 *.py[cdo]
 
-
 # code dirs
-ckan_setup/
+[._]volumes/
 src/extensions/
-
-
-# data dirs
-_volumes
-docker-compose.yml
-.env
-
+ckan_setup/
 
 # misc
+.env.local
 .DS_Store
 [._]tmp/
 .vscode

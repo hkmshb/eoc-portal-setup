@@ -1,0 +1,115 @@
+version: '3.0'
+
+services:
+  #-----------------------------------#
+  #             Database              #
+  #-----------------------------------#
+  db:
+    image: postgres:10-alpine
+    environment:
+      - POSTGRES_USER
+      - POSTGRES_PASSWORD
+    ports:
+      - "9875:5432"
+    volumes:
+      - ./.volumes/db-data:/var/lib/postgresql/data
+      - ./ckan_setup/conf/postgres:/docker-entrypoint-initdb.d/
+    networks:
+      local:
+        aliases:
+          - db
+
+  #-----------------------------------#
+  #             Solr                  #
+  #-----------------------------------#
+  solr:
+    build: ./ckan_setup/ckan/contrib/docker/solr
+    ports:
+     - "8983:8983"
+    networks:
+      local:
+        aliases:
+          - solr
+
+  #-----------------------------------#
+  #             Redis                 #
+  #-----------------------------------#
+  redis:
+    image: redis
+    ports:
+     - "6379:6379"
+    networks:
+      local:
+        aliases:
+          - redis
+
+  #-----------------------------------#
+  #             Datapusher            #
+  #-----------------------------------#
+  datapusher:
+    build: ./ckan_setup/datapusher
+    ports:
+      - "8800:8800"
+    links:
+      - ckan:eoc
+    networks:
+      local:
+        aliases:
+          - datapusher
+    environment:
+      REQUESTS_CA_BUNDLE: "/usr/src/app/cert.pem"
+
+  #-----------------------------------#
+  #             CKAN                  #
+  #-----------------------------------#
+  ckan:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - GITHUB_TOKEN
+    environment:
+      - DEBUG
+      - GITHUB_TOKEN
+      - CKAN_SITE_URL
+      - CKAN_API_KEY
+      
+      - CKAN_DB_USER
+      - CKAN_DB_PASSWORD
+      - CKAN_DB_HOST
+      - CKAN_DB_NAME
+      - DATASTORE_NAME
+      - DATASTORE_USERNAME
+      - DATASTORE_PASSWORD
+
+      - SMTP_USER
+      - SMTP_SERVER
+      - SMTP_PASSWORD
+      
+      - GOOGLE_EMAIL
+      - GOOGLE_PASSWORD
+      - GOOGLE_ANALYTICS_KEY
+      - GATHER2_API_KEY
+      - GATHER2_RESPONSES_URL
+    command: dev-start
+    links:
+      - db:db
+      - solr:solr
+      - redis:redis
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./.volumes/ckan-data:/var/lib/ckan
+      - ./src/extensions:/usr/lib/ckan/default/src/extensions
+    networks:
+      local:
+        aliases:
+          - ckan
+
+volumes:
+  db-data:
+  solr-data:
+  ckan-data:
+
+networks:
+  local:
