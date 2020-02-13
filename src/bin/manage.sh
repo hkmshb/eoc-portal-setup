@@ -1,132 +1,81 @@
-#!/bin/bash
-set -e
+#!/usr/bin/env bash
+set -Eeuo pipefail
 
-EXTS_PATH=./src/extensions
-EHA_GIT_PATH=git@github.com:eHealthAfrica
-EHA_REPOS=( "ckan_setup" "ckanext-eoc" "gather2_integration" )
+LINE=`printf -v row "%${COLUMNS:-$(tput cols)}s"; echo ${row// /=}`
 
-CKAN_VERSION=ckan-2.7.2
-CKAN_REPOS=( "ckan" "datapusher" )
-CKAN_GIT_PATH=git@github.com:ckan
-
-
-envvar_template() {
-  echo """
-  export DEBUG="true"
-  export HOSTNAME="eoc"
-  export GITHUB_TOKEN=
-
-  export PG_USERNAME=
-  export PG_PASSWORD=
-
-  export CKAN_VERSION=${CKAN_VERSION}
-  export CKAN_SITE_URL=http://${HOSTNAME}:5000/
-  export CKAN_DB_HOST=db
-  export CKAN_DB_USER=ckan
-  export CKAN_DB_NAME=ckan
-  export CKAN_DB_PASS=
-
-  export DATASTORE_NAME=datastore
-  export DATASTORE_USER=datastore
-  export DATASTORE_PASS=
-
-  export SOLR_CORE=ckan
-  export SOLR_HOME=/opt/solr/server/solr/${SOLR_CORE}
-
-  export GATHER_API_KEY=
-  export GATHER_RESPONSES_URL=
-
-  export SMTP_SERVER=
-  export SMTP_USER=
-  export SMTP_PASS=
-
-  export GOOGLE_EMAIL=
-  export GOOGLE_PASSWORD=
-  export GOOGLE_ANALYTICS_KEY=
-  export GOOGLE_CLIENT_ID=
-  export GOOGLE_CLIENT_SECRET=
-
-  export AWS_ACCESS_KEY=
-  export AWS_SECRET_KEY=
-  """
+function echo_msg {
+  if [ -z "$1" ]; then
+    echo -e "\033[90m$LINE\033[0m"
+  else
+    msg=" $1 "
+    color=${2:-\\033[39m}
+    echo -e "\033[90m${LINE:${#msg}}\033[0m$color$msg\033[0m"
+  fi
 }
 
-show_help() {
-  echo """
-  Utility script to help with routine EOC development tasks.
-
-  COMMANDS:
-  -----------------------------------------------------------------------------
-  help            : show this help message
-  devenv          : sets up the development environment
-  build           : export env vars, copy necessary files and build ckan image
-  """
+function purge_env {
+  rm -rf ckan_setup
+  rm -rf src/extensions
 }
 
-setup_devenv() {
+function fetch_codes {
+  local CKAN_VERSION=ckan-2.7.2
+  local DATAPUSHER_GIT_BRANCH=0.0.14
+
+  local CKAN_GITHUB_BASEURL=git@github.com:ckan
+  local CKAN_GITHUB_REPO_NAMES=( "ckan" "datapusher" )
+
+  local CKANEXT_BASEDIR=./src/extensions
+  local EHA_GITHUB_BASEURL=git@github.com:eHealthAfrica
+  local EHA_GITHUB_REPO_NAMES=( "ckan_setup" "ckanext-eoc" "gather2_integration" )
+
   # clone eoc repos locally
-  MAIN_REPO=${EHA_REPOS[0]}
+  MAIN_REPO=${EHA_GITHUB_REPO_NAMES[0]}
 
   if [[ ! -d ${MAIN_REPO} ]]; then
-    echo ">> creating the main repo ..."
-    git clone ${EHA_GIT_PATH}/${MAIN_REPO}.git ${MAIN_REPO}
+    echo_msg "Creating the main repo ..."
+    git clone ${EHA_GITHUB_BASEURL}/${MAIN_REPO}.git ${MAIN_REPO}
   fi
 
-  if [[ ! -d ${EXTS_PATH} ]]; then
-    echo ">> creating extensions folder ..."
-    mkdir -p ${EXTS_PATH}
+  if [[ ! -d ${CKANEXT_BASEDIR} ]]; then
+    echo_msg "Creating extensions folder ..."
+    mkdir -p ${CKANEXT_BASEDIR}
   fi
 
-  for repo in "${EHA_REPOS[@]:1}"
+  for repo in "${EHA_GITHUB_REPO_NAMES[@]:1}"
   do
-    if [[ ! -d ${EXTS_PATH}/${repo} ]]; then
-      git clone ${EHA_GIT_PATH}/${repo}.git ${EXTS_PATH}/${repo}
+    if [[ ! -d ${CKANEXT_BASEDIR}/${repo} ]]; then
+      git clone ${EHA_GITHUB_BASEURL}/${repo}.git ${CKANEXT_BASEDIR}/${repo}
     else
       echo ">> repo exists; ${repo}"
     fi
   done
 
   # clone ckan repos locally
-  for repo in "${CKAN_REPOS[@]}"
+  for repo in "${CKAN_GITHUB_REPO_NAMES[@]}"
   do
     if [[ ! -d ${MAIN_REPO}/${repo} ]]; then
       if [[ "${repo}" == "ckan" ]]; then
-        git clone --branch ${CKAN_VERSION} --depth 1 ${CKAN_GIT_PATH}/${repo}.git ${MAIN_REPO}/${repo}
+        git clone --branch ${CKAN_VERSION} --depth 1 ${CKAN_GITHUB_BASEURL}/${repo}.git ${MAIN_REPO}/${repo}
       else
-        git clone --branch master --depth 1 ${CKAN_GIT_PATH}/${repo}.git ${MAIN_REPO}/${repo}
+        git clone --branch ${DATAPUSHER_GIT_BRANCH} --depth 1 ${CKAN_GITHUB_BASEURL}/${repo}.git ${MAIN_REPO}/${repo}
       fi
     else
       echo ">> repo exists; ${repo}"
     fi
   done
-
-  # create .env file
-  if [[ ! -f ./.env ]]; then
-    echo ">> creating .env file ..."
-    echo "$( envvar_template )" > ./.env
-  else
-    echo ">> file exists; .env"
-  fi
 }
 
-perform_build() {
-  echo ">> export env vars ..."
+function build_docker_images {
+  source .env.local
 
-  source .env
-  export POSTGRES_USER=${PG_USERNAME}
-  export POSTGRES_PASSWORD=${PG_PASSWORD}
-  export CKAN_API_KEY=e5d96aec-5f01-4065-bc74-0ada0a54f355
-
-  echo ">> (re)generate ckan_init.sql from template ..."
-  cat ckan_setup/conf/postgres/ckan_init.sql.template | envsubst > ckan_setup/conf/postgres/ckan_init.sql
-
-  echo ">> (re)generate docker-compose.yml from template ..."
-  cat src/docker-compose.yml.tmpl | envsubst > docker-compose.yml
+  echo_msg "(Re)generate ckan_init.sql from template ..."
+  cat ckan_setup/conf/postgres/ckan_init.sql.template | envsubst > ckan_setup/conf/postgres/ckan_int.sql
 
   # patch ckan
   cd ckan_setup
   if [[ ! -f ckan/.skip ]]; then
-    echo ">> patch ckan with local updates ..."
+    echo_msg "Patch CKAN with local updates ..."
 
     cp ckan_patch.patch ckan
     cd ckan
@@ -136,7 +85,7 @@ perform_build() {
     cd ..
   fi
 
-  echo ">> copying files in preparation for docker image build..."
+  echo_msg "Copying files in preparation for docker image build ..."
   rsync -a conf/* ckan/conf
 
   cp datapusher_Dockerfile datapusher/Dockerfile
@@ -144,13 +93,26 @@ perform_build() {
   cp conf/datapusher_main.py datapusher/datapusher/main.py
   cp solr_Dockerfile ckan/contrib/docker/solr/Dockerfile
 
-  echo ">> (re)-build ckan image ..."
-  docker-compose build datapusher solr ckan
+  echo_msg "(Re)-build docker images ..."
+  docker-compose build --no-cache --force-rm datapusher solr ckan
 }
 
 case "$*" in
-  help         )  show_help ;;
-  devenv       )  setup_devenv ;;
-  build        )  perform_build ;;
-  *            )  show_help ;;
+  purge )
+    echo_msg "Purging the local development env setup ..."
+    purge_env
+  ;;
+
+  init )
+    if [ ! -e .env.local ]; then
+      ./src/bin/gen_env_file.sh
+      echo -e "\033[93mUpdate created .env file then re-issue 'make init' again\033[0m"
+    else
+      source .env.local
+
+      fetch_codes
+      build_docker_images
+    fi
+  ;;
+
 esac
