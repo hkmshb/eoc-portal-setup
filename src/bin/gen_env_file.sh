@@ -49,7 +49,7 @@ function gen_env_file {
 # ==================================================================
 export DEBUG=true
 export HOSTNAME=${HOSTNAME}
-export GITHUB_TOKEN=
+export GITHUB_TOKEN=<required>
 
 export CKAN_VERSION=${CKAN_VERSION}
 export CKAN_SITE_URL=http://${HOSTNAME}:5000/

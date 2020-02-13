@@ -1,43 +1,63 @@
-# EOC-Setup
+# EOC Setup
 
-An end-to-end deployment setup for the EOC data portal and associated ELK stack for
-local development which tries to replicate the exact workings of the production env.
+This repository provides scripts and a code structure that simplifies CKAN extension
+development for the EOC Data Portal and eases the development environment setup. The
+target EOC CKAN extensions for local development are:
 
-Note: at the moment its more or less for ELK development as the custom extensions
-are pulled in from Github directly. The next step would be to define envvars that
-allow the setup use local repositories of target CKAN extensions.
+* [ckanext-eoc](https://github.com/eHealthAfrica/ckanext-eoc)
+* [gather2_integration](https://github.com/eHealthAfrica/gather2_integration)
 
-## Running
+## Setup
+
+### Step 1: Fetch Codes
+
+Begin by issuing the command below. This creates a `.env.local` file if it does not
+already exist then terminates.
 
 ```bash
-# just the CKAN stack
-$ ./manage.sh ckan --up
-
-# the ELK stack
-$ ./manage.sh elk --up
-
-# the CKAN & ELK stack
-# ./manage.sh ckan elk --up
+# creates .env.local file on first run if missing
+$ make init
 ```
 
-## EOC ELK
+Edit the `.env.local` file and replace all `<required>` placeholers with appropriate
+values; these environment variabls are necessary for a proper CKAN setup and build.
+The `GITHUB_TOKEN` variable is required for accessing private code repositories like
+`ckanext-eoc` necessary for a complete and functional CKAN build.
 
-This is a standalone version of the ELK setup found within `ckan_setup/elk`. This is
-meant to provide a quick and easy way to test stuff out and working changes are then
-to be effected to the original setup.
+Issue the command above again if the initial run created the `.env.local` file. This
+will fetch necessary code repositories (CKAN and EOC ckan extensions), then initial
+docker image builds for services defined within the `docker-compose.yml` file.
 
-## Known Issues
+### Step 2: Create Python egg for EOC Extensions
 
-### Local CKAN Development Setup
+The local Docker setup uses a mapped volume for the `ckan` service to watch and effect
+local change to the EOC extensions within a running container. However, due to this
+mapping installing these extensions from within Docker has no effect; they end up being
+reported missing.
 
-Developed extensions are collected and installed in develop mode (i.e. using `-e` flag)
-from within the `extensions` folder which is also added as a mapped volume. This allows
-changes to reflect within the docker container. Image creation goes without a hitch,
-however on container startup, extensions installed from within the `extensions` folder
-are reported as not found; however if the mapped volume is dropped everything works as
-expected.
+To solve this a *pseudo-install* needs to happen by creating a Python egg packages for
+these extensions outside of Docker. These eggs carry into the container via the mapping
+and these packages are taken to be installed.
 
-Work around: leave the mapped volume active, docker up then shell into the ckan container
-from there manually install all affected extensions in develop mode. This should create
-the necessary `.egg-info` directories which will allow subsequent runs to run without
-any need for the manual workaroud.
+```bash
+# create and activte a temporary virtualenv (using pyenv)
+$ pyenv virtualenv -p python2 ckan-eoc
+$ pyenv activate ckan-eoc
+
+# 'pseudo-install' extensions
+(ckan-eoc) $ cd src/extentions
+(ckan-eoc) $ pip install -e ckanext-eoc/.
+(ckan-eoc) $ pip install -e gather2_integration/.
+
+# drop created virtualenv
+(ckan-eoc) $ pyenv deactivate
+$ pyenv uninstall ckan-eoc
+```
+
+## Run
+s
+To run the local EOC Data Portal setup:
+
+```bash
+$ make run
+```

@@ -16,5 +16,8 @@ purge:
 init:
 	./src/bin/manage.sh init
 
+run:
+	source .env.local && docker-compose up
+
 test:
 	pycodestyle --count --ignore=E501,E731 ./src/extensions/ckanext-eoc/ckanext/eoc
