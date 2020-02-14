@@ -8,7 +8,7 @@ help:
 
 
 clean:
-	rm -rf ./_volumes/ckan-data ./_volumes/db-data
+	rm -rf ./.data/*
 
 purge:
 	./src/bin/manage.sh purge

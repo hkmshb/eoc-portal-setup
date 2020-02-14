@@ -5,9 +5,9 @@ LABEL MAINTAINER="abdulhakeem.shaibu@ehealthafrica.org"
 
 ARG GITHUB_TOKEN
 
-ENV CKAN_HOME ${CKAN_HOME}
-ENV CKAN_CONFIG ${CKAN_CONFIG}
-ENV CKAN_STORAGE_PATH ${CKAN_STORAGE_PATH}
+ENV CKAN_HOME /usr/lib/ckan/default
+ENV CKAN_CONFIG /etc/ckan/default
+ENV CKAN_STORAGE_PATH /var/lib/ckan
 
 # Install required packages
 RUN apt-get -q -y update && apt-get -q -y upgrade \

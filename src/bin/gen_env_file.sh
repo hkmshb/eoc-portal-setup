@@ -70,7 +70,7 @@ export CKAN_DB_PASSWORD=$(gen_random_string)
 
 export DATASTORE_NAME=datastore
 export DATASTORE_USERNAME=datastore
-export DATASTORE_PASSWORD=$(gen_random_string)
+export DATA_STORE_PASSWORD=$(gen_random_string)
 
 ## Solr
 export SOLR_CORE=${SOLR_CORE}
