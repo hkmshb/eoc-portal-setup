@@ -17,7 +17,7 @@ init:
 	./src/bin/manage.sh init
 
 run:
-	source .env.local && docker-compose up
+	source .env.local && docker-compose -p eoc-orig up
 
 test:
 	pycodestyle --count --ignore=E501,E731 ./src/extensions/ckanext-eoc/ckanext/eoc

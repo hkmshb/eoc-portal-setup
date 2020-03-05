@@ -77,8 +77,8 @@ export SOLR_CORE=${SOLR_CORE}
 export SOLR_HOME=/opt/solr/server/solr/${SOLR_CORE}
 
 ## SMTP
-export SMTP_USER=
 export SMTP_SERVER=
+export SMTP_USER=
 export SMTP_PASSWORD=
 
 # ------------------------------------------------------------------
