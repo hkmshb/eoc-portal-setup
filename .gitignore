@@ -10,6 +10,7 @@ ckan_setup/
 # misc
 .env.local
 .DS_Store
+[._]data/
 [._]tmp/
 .vscode
 .venv
